@@ -3,14 +3,14 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 async function registerController(req, res) {
-    const {email, password, role} =req.body;
+    const {email, password, role, fullname:{firstname, lastname}} = req.body;
     const isUserExists = await userModel.findOne({email});
 
     if(isUserExists) {
         return res.status(400).json({message: 'User already exists'});
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await userModel.create({email, password: hashedPassword, role});
+    const newUser = await userModel.create({email, password: hashedPassword, role, fullname: { firstname, lastname }});
     const token = jwt.sign({id: newUser._id, role}, process.env.JWT_SECRET);
     res.cookie('token', token);
     res.status(201).json({
@@ -39,6 +39,5 @@ async function loginController(req, res) {
 
 module.exports = {
     registerController,
-    loginController,
-    
+    loginController
 }
